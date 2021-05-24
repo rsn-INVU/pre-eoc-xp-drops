@@ -1,5 +1,8 @@
 package com.preeocxp;
 
+import com.sun.javafx.font.FontResource;
+import com.sun.javafx.tk.FontLoader;
+import com.sun.jna.platform.FileUtils;
 import net.runelite.api.Client;
 import net.runelite.api.Point;
 import net.runelite.api.Skill;
@@ -9,6 +12,7 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
+import net.runelite.client.util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -16,6 +20,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 
@@ -49,9 +54,11 @@ public class PreEocXpOverlay extends Overlay
 	private static final LinkedList<Long> timeValStored = new LinkedList <Long> ();
 	private static int xpDropWidth;
 
-	File xpBarMid = new File("/Users/slushangel/Desktop/xpBarMid.png");
-	File xpBarLeft = new File("/Users/slushangel/Desktop/xpBarLeft.png");
-	File xpBarRight = new File("/Users/slushangel/Desktop/xpBarRight.png");
+	final BufferedImage xpBarMidImage = ImageUtil.loadImageResource(getClass(), "/xpBarMid.png");
+	final BufferedImage xpBarLeftImage = ImageUtil.loadImageResource(getClass(), "/xpBarLeft.png");
+	final BufferedImage xpBarRightImage = ImageUtil.loadImageResource(getClass(), "/xpBarRight.png");
+
+
 	private static File runescapeChat = new File("/Users/slushangel/Desktop/runescape_chat.ttf");
 	Font runescapeChatFont = new Font ("runescape_chat.ttf", Font.TRUETYPE_FONT, 16);
 	private static File runescapeSmall = new File("/Users/slushangel/Desktop/runescape_small.ttf");
@@ -302,25 +309,10 @@ public class PreEocXpOverlay extends Overlay
 			xpDropWidth = metrics.stringWidth(skillXpString + "xp");
 			OverlayUtil.renderTextLocation(graphics, new Point(drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth), drawYVal), skillXpString + "xp", dropColor);
 		}
-		//OverlayUtil.renderTextLocation(graphics, new Point(0, 0), "Gametick" + tickCounter, Color.RED);
 	}
 
 	private Rectangle drawRectangle(Graphics2D graphics, int x , int y)
 	{
-		BufferedImage xpBarMidImage = null;
-		BufferedImage xpBarLeftImage = null;
-		BufferedImage xpBarRightImage = null;
-
-		try
-		{
-			xpBarMidImage = ImageIO.read(xpBarMid);
-			xpBarLeftImage = ImageIO.read(xpBarLeft);
-			xpBarRightImage = ImageIO.read(xpBarRight);
-		}
-		catch (IOException e)
-		{
-		}
-
 		Rectangle rectangle = new Rectangle(OVERLAY_RECT_SIZE_X - shrinkValue, OVERLAY_RECT_SIZE_Y);
 		rectangle.setLocation(x + shrinkValue, y);
 
