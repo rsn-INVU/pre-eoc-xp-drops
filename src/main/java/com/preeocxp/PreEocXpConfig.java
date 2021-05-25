@@ -40,14 +40,14 @@ public interface PreEocXpConfig extends Config
 	)
 	default int lotsLimit()
 	{
-		return 100000000;
+		return 214748364;
 	}
 
 	enum OptionEnum
 	{
 		REGULAR,
 		LARGE,
-		XL
+		MASSIVE
 	}
 	@ConfigItem(
 			keyName = "dropSize",
