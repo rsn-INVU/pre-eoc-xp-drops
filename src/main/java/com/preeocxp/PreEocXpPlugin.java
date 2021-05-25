@@ -49,6 +49,7 @@ import java.time.temporal.ChronoUnit;
 
 @PluginDependency(XpTrackerPlugin.class)
 
+
 public class PreEocXpPlugin extends Plugin
 {
 	private static long loginXp = 0;
@@ -69,24 +70,44 @@ public class PreEocXpPlugin extends Plugin
 	@Inject
 	Client client;
 
+	/**
+	 *
+	 * @param configManager get the Plugin's configuration
+	 * @return
+	 */
 	@Provides
 	PreEocXpConfig getConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(PreEocXpConfig.class);
 	}
+
+	/**
+	 * starts up the overlay
+	 */
 	@Override
 	protected void startUp() {
 		overlayManager.add(overlay);
 	}
+
+	/**
+	 * removes the overlay
+	 */
 	@Override
 	protected void shutDown() {
 		overlayManager.remove(overlay);
 	}
-	//onGameTick cause it works past 200m xp, and longs so people with more than 2b xp can use this
+
+	/**
+	 * onGameTick cause it works past 200m xp, and longs so people with more than 2b xp can use this.
+	 * on login, grabs the overall xp, and signals to the overlay class that xp has been updated.
+	 * Once xp has been fetched once, check if XP has been gained on the gameTick.
+	 * If so, update xpDrop by comparing to the last fetched xp loginXp. Update fetched xp loginXp.
+	 * @param gameTick when a gameTick event is sent - doStuff.
+	 */
 	@Subscribe
 	public void onGameTick(GameTick gameTick)
 	{
-		tickCounter ++;
+		//tickCounter ++;
 		long overallXp = client.getOverallExperience();
 		preXp = loginXp;
 
@@ -117,6 +138,9 @@ public class PreEocXpPlugin extends Plugin
 			period = 1,
 			unit = ChronoUnit.SECONDS
 	)
+	/**
+	 * resets the xp when called.
+	 */
 	private void resetState()
 	{
 		loginXp = 0;
@@ -132,6 +156,10 @@ public class PreEocXpPlugin extends Plugin
 		}
 	}
 
+	/**
+	 * Reset the xp when logging out.
+	 * @param event when the GameState changes, do things according to the state.
+	 */
 	@Subscribe
 	public void onGameStateChanged(GameStateChanged event) {
 		switch (event.getGameState())
@@ -141,7 +169,6 @@ public class PreEocXpPlugin extends Plugin
 				startUp();
 
 			case HOPPING:
-			case CONNECTION_LOST:
 			case LOGGING_IN:
 			case LOGIN_SCREEN:
 				resetState();

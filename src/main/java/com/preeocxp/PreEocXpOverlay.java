@@ -79,6 +79,10 @@ public class PreEocXpOverlay extends Overlay
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "XP Tracker overlay"));
 	}
 
+	/**
+	 * loads the font file, creates the two fonts, with the smallFont being scalable.
+	 * lastly registers the fonts.
+	 */
 	public void registerFont()
 	{
 		try
@@ -99,6 +103,13 @@ public class PreEocXpOverlay extends Overlay
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Starts off by setting the font size, lotsLimit and skillChosen according to the Config.
+	 * Unless null return, triggers renderRectangle.
+	 * @param graphics
+	 * @return if LoginXp is 0, no xp has been fetched, so no need to start rendering. (even lvl 3s aren't 0 xp due to hp)
+	 */
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
@@ -134,9 +145,17 @@ public class PreEocXpOverlay extends Overlay
 		return new Dimension(OVERLAY_RECT_SIZE_X, OVERLAY_RECT_SIZE_Y);
 	}
 
-	/*
-	"master method" - triggers and controls the rendering of the rectangle and it's asset, tooltips, and text values.
-	*/
+	/**
+	 * "master method" - triggers and controls the rendering of the rectangle and it's asset, tooltips, and text values.
+	 * Checks if new xp has been sent. If so, adds the starting time and the xp drop to lists.
+	 * After 1.8 seconds, these values are removed from the lists (as these are no longer to be rendered)
+	 * Initiates the drawing of xp drops, the counter value and the background rectangle.
+	 * Lastly checks whether the counter is hovered to display tooltips.
+	 * @param graphics
+	 * @param x
+	 * @param y
+	 * @param bounds - the bounds of the rectangle - used to check whether to display tooltips or not.
+	 */
 	private void renderRectangle(Graphics2D graphics, int x, int y, Rectangle bounds)
 	{
 		graphics.setColor(OVERLAY_COLOR);
@@ -207,6 +226,15 @@ public class PreEocXpOverlay extends Overlay
 		}
 	}
 
+	/**
+	 * Draws the text to be rendered on top of the xp counter.
+	 * Sets the font to the ChatFont, sets the colors of the text, and calculates its position, depending on the size.
+	 * This is done stepwise currently, as it seems to have been that way in 2010 (atleast for large and small values...
+	 * Finally draws the total xp, or lots, if the threshold was met.
+	 * @param graphics
+	 * @param x
+	 * @param y
+	 */
 	private void drawXpLabel(Graphics2D graphics, int x, int y)
 	{
 		graphics.setFont( runescapeChatFont );
@@ -275,6 +303,16 @@ public class PreEocXpOverlay extends Overlay
 		OverlayUtil.renderTextLocation(graphics, new Point(drawX + offset + shrinkValue, drawY), "XP:", xpColor);
 	}
 
+	/**
+	 * Draws the xp drop.
+	 * Sets the font and color of the xp drop.
+	 * Cycle through all the currently stored xp drops and their time pairs.
+	 * If 1.2 seconds have not passed - draw the position of the xp drop based on the time passed (same animation speed regardless of fps)
+	 * After a drop has "existed" for 1.2 seconds or more - hold it for .6 seconds, until it disappears.
+	 * @param graphics
+	 * @param x
+	 * @param y
+	 */
 	private void drawXpDrop(Graphics2D graphics, int x, int y)
 	{
 		graphics.setFont(runescapeSmallFont);
@@ -299,6 +337,15 @@ public class PreEocXpOverlay extends Overlay
 		}
 	}
 
+	/**
+	 * Draws the background rectangle, and the xp counter graphic.
+	 * Gets the position of the 2 edge images, and scales the center one according to xp value, for cosmetic reasons.
+	 * Gets the position and scale dynamically, in case future expansion here would be desired (such as replacing the graphic)
+	 * @param graphics
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	private Rectangle drawRectangle(Graphics2D graphics, int x , int y)
 	{
 		Rectangle rectangle = new Rectangle(OVERLAY_RECT_SIZE_X - shrinkValue, OVERLAY_RECT_SIZE_Y);
@@ -316,6 +363,9 @@ public class PreEocXpOverlay extends Overlay
 		return rectangle;
 	}
 
+	/**
+	 * draws the tooltip displaying what skill is being...displayed.
+	 */
 	private void drawTooltip()
 	{
 		final PanelComponent xpTooltip = (PanelComponent) this.xpTooltip.getComponent();
