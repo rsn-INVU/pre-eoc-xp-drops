@@ -56,7 +56,6 @@ public class PreEocXpPlugin extends Plugin
 	public static int xpDrop;
 	public static int tickCounter = 0;
 	public static boolean sentXp = true;
-	private static boolean widgetState = false;
 
 	@Inject
 	private PreEocXpConfig config;
@@ -76,13 +75,11 @@ public class PreEocXpPlugin extends Plugin
 		return configManager.getConfig(PreEocXpConfig.class);
 	}
 	@Override
-	protected void startUp() throws Exception
-	{
+	protected void startUp() {
 		overlayManager.add(overlay);
 	}
 	@Override
-	protected void shutDown() throws Exception
-	{
+	protected void shutDown() {
 		overlayManager.remove(overlay);
 	}
 	//onGameTick cause it works past 200m xp, and longs so people with more than 2b xp can use this
@@ -136,8 +133,7 @@ public class PreEocXpPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameStateChanged(GameStateChanged event) throws Exception
-	{
+	public void onGameStateChanged(GameStateChanged event) {
 		switch (event.getGameState())
 		{
 			case LOGGED_IN:
