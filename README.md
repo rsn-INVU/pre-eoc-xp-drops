@@ -1,3 +1,4 @@
+![ReadMe Banner](https://user-images.githubusercontent.com/84582696/119559024-6dd59e80-bda2-11eb-868b-6f9985ac605d.png)
 # Pre Eoc Xp Drops
 
 Creates the 2010-2011 xp counter, and xp drops, while adding some more customisability to them.
