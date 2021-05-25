@@ -18,9 +18,7 @@ import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 
@@ -58,11 +56,8 @@ public class PreEocXpOverlay extends Overlay
 	final BufferedImage xpBarLeftImage = ImageUtil.loadImageResource(getClass(), "/xpBarLeft.png");
 	final BufferedImage xpBarRightImage = ImageUtil.loadImageResource(getClass(), "/xpBarRight.png");
 
-
-	private static File runescapeChat = new File("/Users/slushangel/Desktop/runescape_chat.ttf");
-	Font runescapeChatFont = new Font ("runescape_chat.ttf", Font.TRUETYPE_FONT, 16);
-	private static File runescapeSmall = new File("/Users/slushangel/Desktop/runescape_small.ttf");
-	Font runescapeSmallFont = new Font ("runescape_chat.ttf", Font.TRUETYPE_FONT, 16);
+	Font runescapeChatFont;
+	Font runescapeSmallFont;
 	private static float dropSize = 16f;
 
 	@Inject
@@ -93,9 +88,12 @@ public class PreEocXpOverlay extends Overlay
 	{
 		try
 		{
+			InputStream runescapeChat = this.getClass().getResourceAsStream("/runescape_chat.ttf");
+			InputStream runescapeSmall = this.getClass().getResourceAsStream("/runescape_small.ttf");
 			//create the font to use. Specify the size!
 			runescapeChatFont = Font.createFont(Font.TRUETYPE_FONT, runescapeChat).deriveFont(16f);
 			runescapeSmallFont = Font.createFont(Font.TRUETYPE_FONT, runescapeSmall).deriveFont(dropSize);
+
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			//register the font
 			ge.registerFont(runescapeChatFont);
