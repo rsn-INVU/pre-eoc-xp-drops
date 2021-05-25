@@ -1,8 +1,5 @@
 package com.preeocxp;
 
-import com.sun.javafx.font.FontResource;
-import com.sun.javafx.tk.FontLoader;
-import com.sun.jna.platform.FileUtils;
 import net.runelite.api.Client;
 import net.runelite.api.Point;
 import net.runelite.api.Skill;
@@ -14,7 +11,6 @@ import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import net.runelite.client.util.ImageUtil;
 
-import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -47,7 +43,6 @@ public class PreEocXpOverlay extends Overlay
 	private Skill skillChosen =  Skill.OVERALL;
 	private static int lotsThreshold = 100000000; //100 million
 	private static int shrinkValue = 0;
-	private static int xpWidth;
 	private static final LinkedList<Integer> xpStored = new LinkedList<Integer> ();
 	private static final LinkedList<Long> timeValStored = new LinkedList <Long> ();
 	private static int xpDropWidth;
@@ -99,11 +94,7 @@ public class PreEocXpOverlay extends Overlay
 			ge.registerFont(runescapeChatFont);
 			ge.registerFont(runescapeSmallFont);
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (FontFormatException e)
+		catch (IOException | FontFormatException e)
 		{
 			e.printStackTrace();
 		}
@@ -183,7 +174,6 @@ public class PreEocXpOverlay extends Overlay
 					n ++;
 				}
 			}
-			drawXpDrop(graphics, 0, 0);
 		}
 		else
 		{
@@ -199,8 +189,8 @@ public class PreEocXpOverlay extends Overlay
 				}
 				n++;
 			}
-			drawXpDrop(graphics, 0, 0);
 		}
+		drawXpDrop(graphics, 0, 0);
 
 		Rectangle backgroundRectangle = drawRectangle(graphics, x, y);
 
@@ -233,7 +223,7 @@ public class PreEocXpOverlay extends Overlay
 
 		Color xpColor = Color.WHITE;
 		Color lotsColor = Color.RED;
-		String formattedXp = decimalFormat.format(skillXp);
+		String formattedXp;
 		int offset = 5;
 
 		//get the length of the skillXp to scale rectangle
