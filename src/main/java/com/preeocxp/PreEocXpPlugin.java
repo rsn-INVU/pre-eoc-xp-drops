@@ -30,6 +30,7 @@ import net.runelite.api.MenuAction;
 import net.runelite.api.events.*;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.OverlayMenuClicked;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDependency;
@@ -57,6 +58,7 @@ public class PreEocXpPlugin extends Plugin
 	public static int xpDrop;
 	public static int tickCounter = 0;
 	public static boolean sentXp = true;
+	private static boolean configWasChanged = true;
 
 	@Inject
 	private PreEocXpConfig config;
@@ -85,7 +87,8 @@ public class PreEocXpPlugin extends Plugin
 	 * starts up the overlay
 	 */
 	@Override
-	protected void startUp() {
+	protected void startUp()
+    {
 		overlayManager.add(overlay);
 	}
 
@@ -129,6 +132,25 @@ public class PreEocXpPlugin extends Plugin
 		}
 	}
 
+	/**
+	 * sets a global toggle when a config has been changed.
+	 * @param configChanged
+	 */
+	@Subscribe
+    public void onConfigChanged(ConfigChanged configChanged)
+    {
+	    setConfigUpdateState(true);
+    }
+
+    public static boolean getConfigUpdateState()
+	{
+		return configWasChanged;
+	}
+
+	public static void setConfigUpdateState (boolean configSetter)
+	{
+		configWasChanged = configSetter;
+	}
 	public static long getLoginXp()
 	{
 		return loginXp;

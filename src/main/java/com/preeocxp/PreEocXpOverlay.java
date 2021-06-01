@@ -18,8 +18,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 
-import static com.preeocxp.PreEocXpPlugin.sentXp;
-import static com.preeocxp.PreEocXpPlugin.xpDrop;
+import static com.preeocxp.PreEocXpPlugin.*;
 import static net.runelite.api.MenuAction.RUNELITE_OVERLAY_CONFIG;
 //import static net.runelite.client.plugins.preeocxp.PreEocXpPlugin.tickCounter;
 import static net.runelite.client.ui.overlay.OverlayManager.OPTION_CONFIGURE;
@@ -77,6 +76,7 @@ public class PreEocXpOverlay extends Overlay
 		setPriority(OverlayPriority.HIGH);
 
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "XP Tracker overlay"));
+
 	}
 
 	/**
@@ -105,7 +105,22 @@ public class PreEocXpOverlay extends Overlay
 	}
 
 	/**
-	 * Starts off by setting the font size, lotsLimit and skillChosen according to the Config.
+	 * set the dropsize according to config
+	 */
+	public void setDropSize ()
+	{
+		if (config.dropSize() == PreEocXpConfig.OptionEnum.REGULAR) {
+			dropSize = 16f;
+		} else if (config.dropSize() == PreEocXpConfig.OptionEnum.LARGE) {
+			dropSize = 20f;
+		} else {
+			dropSize = 24f;
+		}
+	}
+
+	/**
+	 * Starts off by setting the font size, lotsLimit and skillChosen according to the Config -if the config was changed.
+	 * on startup, the config is loaded and set to true.
 	 * Unless null return, triggers renderRectangle.
 	 * @param graphics
 	 * @return if LoginXp is 0, no xp has been fetched, so no need to start rendering. (even lvl 3s aren't 0 xp due to hp)
@@ -113,22 +128,16 @@ public class PreEocXpOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (config.dropSize() == PreEocXpConfig.OptionEnum.REGULAR)
-		{
-			dropSize = 16f;
+		if (PreEocXpPlugin.getConfigUpdateState()) {
+
+			setDropSize();
+			registerFont();
+			skillChosen = config.displaySkill();
+			lotsThreshold = config.lotsLimit();
+			PreEocXpPlugin.setConfigUpdateState(false);
 		}
-		else if (config.dropSize() == PreEocXpConfig.OptionEnum.LARGE)
-		{
-			dropSize = 20f;
-		}
-		else
-		{
-			dropSize = 24f;
-		}
-		registerFont();
+
 		graphics.setFont(runescapeChatFont);
-		skillChosen = config.displaySkill();
-		lotsThreshold = config.lotsLimit();
 
 		long xpFetched = PreEocXpPlugin.getLoginXp();
 
