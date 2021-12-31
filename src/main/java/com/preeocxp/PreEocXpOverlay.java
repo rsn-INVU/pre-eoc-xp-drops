@@ -9,6 +9,7 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
+import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
@@ -53,6 +54,10 @@ public class PreEocXpOverlay extends Overlay
 	Font runescapeChatFont;
 	Font runescapeSmallFont;
 	private static float dropSize = 16f;
+	//private static int dropDirection = 1;
+	private static int dropXOffset = 256;
+	private static int dropYOffset = 100;
+	//private static String plusString = "";
 
 	@Inject
 	private PreEocXpOverlay(
@@ -119,6 +124,26 @@ public class PreEocXpOverlay extends Overlay
 	}
 
 	/**
+	 * check if 2012-style xp drops are enabled and adjust some
+	 * settings to accommodate the chosen style
+	 */
+	public void checkTwelve()
+	{
+		if (config.enableTwelve()) {
+			//dropDirection = -1;
+			dropXOffset = - 200;
+			dropYOffset = 100;
+			//plusString = "+";
+		}
+		else {
+			//dropDirection = 1;
+			dropXOffset = 0;
+			dropYOffset = 0;
+			//plusString = "";
+		}
+	}
+
+	/**
 	 * Starts off by setting the font size, lotsLimit and skillChosen according to the Config -if the config was changed.
 	 * on startup, the config is loaded and set to true.
 	 * Unless null return, triggers renderRectangle.
@@ -134,6 +159,8 @@ public class PreEocXpOverlay extends Overlay
 			registerFont();
 			skillChosen = config.displaySkill();
 			lotsThreshold = config.lotsLimit();
+			//checkTwelve();
+
 			PreEocXpPlugin.setConfigUpdateState(false);
 		}
 
@@ -161,8 +188,8 @@ public class PreEocXpOverlay extends Overlay
 	 * Initiates the drawing of xp drops, the counter value and the background rectangle.
 	 * Lastly checks whether the counter is hovered to display tooltips.
 	 * @param graphics
-	 * @param x
-	 * @param y
+	 * @param x initial x position
+	 * @param y initial y position
 	 * @param bounds - the bounds of the rectangle - used to check whether to display tooltips or not.
 	 */
 	private void renderRectangle(Graphics2D graphics, int x, int y, Rectangle bounds)
@@ -218,21 +245,29 @@ public class PreEocXpOverlay extends Overlay
 				n++;
 			}
 		}
-		drawXpDrop(graphics, 0, 0);
+		if (!config.onlyCounter()) {
+			if (!config.enableTwelve()) {
+				drawTenDrop(graphics, 0, 0);
+			}
+			else drawTwelveDrop(graphics, -dropXOffset, 0);
+		}
 
-		Rectangle backgroundRectangle = drawRectangle(graphics, x, y);
 
-		drawXpLabel(graphics, 0, 0);
-
-		// If mouse is hovering the globe
-		if (backgroundRectangle.contains(mouseX, mouseY))
-		{
-			//prev x,y being mouse position
-			if (config.enableTooltips())
+		if (!config.onlyDrops()) {
+			Rectangle backgroundRectangle = drawRectangle(graphics, x, y);
+			drawXpLabel(graphics, 0, 0);
+			// If mouse is hovering the box
+			if (backgroundRectangle.contains(mouseX, mouseY))
 			{
-				drawTooltip();
+				//prev x,y being mouse position
+				if (config.enableTooltips())
+				{
+					drawTooltip();
+				}
 			}
 		}
+
+
 	}
 
 	/**
@@ -241,8 +276,8 @@ public class PreEocXpOverlay extends Overlay
 	 * This is done stepwise currently, as it seems to have been that way in 2010 (atleast for large and small values...
 	 * Finally draws the total xp, or lots, if the threshold was met.
 	 * @param graphics
-	 * @param x
-	 * @param y
+	 * @param x initial x position
+	 * @param y initial y position
 	 */
 	private void drawXpLabel(Graphics2D graphics, int x, int y)
 	{
@@ -319,10 +354,10 @@ public class PreEocXpOverlay extends Overlay
 	 * If 1.2 seconds have not passed - draw the position of the xp drop based on the time passed (same animation speed regardless of fps)
 	 * After a drop has "existed" for 1.2 seconds or more - hold it for .6 seconds, until it disappears.
 	 * @param graphics
-	 * @param x
-	 * @param y
+	 * @param x initial x position of the xp Drop
+	 * @param y initial y position of the xp Drop
 	 */
-	private void drawXpDrop(Graphics2D graphics, int x, int y)
+	private void drawTenDrop(Graphics2D graphics, int x, int y)
 	{
 		graphics.setFont(runescapeSmallFont);
 		final FontMetrics metrics = graphics.getFontMetrics();
@@ -343,6 +378,54 @@ public class PreEocXpOverlay extends Overlay
 			String skillXpString = decimalFormat.format(xpStored.get(i));
 			xpDropWidth = metrics.stringWidth(skillXpString + "xp");
 			OverlayUtil.renderTextLocation(graphics, new Point(drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth), drawYVal), skillXpString + "xp", dropColor);
+		}
+	}
+
+	/**
+	 * Draws the xp drop in a 2012 style.
+	 * Sets the font and color of the xp drop.
+	 * Cycle through all the currently stored xp drops and their time pairs.
+	 * If 0.6 seconds have not passed - draw the position of the xp drop based on the time passed (same animation speed regardless of fps)
+	 * After a drop has "existed" for 0.6 seconds or more - hold it for 1.2 seconds, and fade it, until it disappears.
+	 * @param graphics
+	 * @param x initial x position of the xp Drop
+	 * @param y initial y position of the xp Drop
+	 */
+	private void drawTwelveDrop(Graphics2D graphics, int x, int y)
+	{
+		graphics.setFont(runescapeSmallFont);
+		final FontMetrics metrics = graphics.getFontMetrics();
+		// runescape chat, 12p, shadow black.
+		int drawXVal = x;
+		int drawYVal;
+
+		int opacityValue = 255;
+		Color dropColor = new Color(250, 141, 17);
+		Color shadowColor = new Color(0,0,0);
+
+		for (int i = 0; i < xpStored.size(); i++)
+		{
+			long timePassed = System.currentTimeMillis() - timeValStored.get(i);
+			long animationTimer = Math.min((timePassed) , 600);
+
+			//moves 150 pixels on the Y axis
+			drawYVal = ((int) ((-1)*((animationTimer) / 4) ) + 124);
+			if (timePassed > 600) {
+				opacityValue = 255 - (int)((timePassed - 600)/4.7);
+			}
+
+			DecimalFormat decimalFormat = new DecimalFormat("###,###,###");
+
+			String skillXpString = decimalFormat.format(xpStored.get(i));
+			String xpDropString = "+" + skillXpString + "xp";
+			xpDropWidth = metrics.stringWidth(xpDropString);
+			//draw shadow
+			graphics.setColor(ColorUtil.colorWithAlpha(shadowColor,opacityValue));
+			graphics.drawString(xpDropString, drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth/2) + 1, drawYVal +1 );
+			//draw text
+			graphics.setColor(ColorUtil.colorWithAlpha(dropColor,opacityValue));
+			graphics.drawString(xpDropString, drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth/2), drawYVal);
+			//OverlayUtil.renderTextLocation(graphics, new Point(drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth/2), drawYVal), xpDropString, dropColor);
 		}
 	}
 
