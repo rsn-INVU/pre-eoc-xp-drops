@@ -3,6 +3,9 @@ package com.preeocxp;
 import net.runelite.api.Client;
 import net.runelite.api.Point;
 import net.runelite.api.Skill;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetID;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.plugins.xptracker.XpTrackerService;
 import net.runelite.client.ui.overlay.*;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -54,10 +57,6 @@ public class PreEocXpOverlay extends Overlay
 	Font runescapeChatFont;
 	Font runescapeSmallFont;
 	private static float dropSize = 16f;
-	//private static int dropDirection = 1;
-	private static int dropXOffset = 256;
-	private static int dropYOffset = 100;
-	//private static String plusString = "";
 
 	@Inject
 	private PreEocXpOverlay(
@@ -77,7 +76,10 @@ public class PreEocXpOverlay extends Overlay
 		this.xpTooltip.getComponent().setPreferredSize(new Dimension(TOOLTIP_RECT_SIZE_X, -30));
 
 		setPosition(OverlayPosition.DETACHED);
-		setLayer(OverlayLayer.ABOVE_SCENE);
+
+		//Above HP Bars and Hitsplats - Below Bank and Quest interfaces
+		setLayer(OverlayLayer.MANUAL);
+		drawAfterInterface(WidgetID.HEALTH_OVERLAY_BAR_GROUP_ID);
 		setPriority(OverlayPriority.HIGH);
 
 		getMenuEntries().add(new OverlayMenuEntry(RUNELITE_OVERLAY_CONFIG, OPTION_CONFIGURE, "XP Tracker overlay"));
@@ -120,26 +122,6 @@ public class PreEocXpOverlay extends Overlay
 			dropSize = 20f;
 		} else {
 			dropSize = 24f;
-		}
-	}
-
-	/**
-	 * check if 2012-style xp drops are enabled and adjust some
-	 * settings to accommodate the chosen style
-	 */
-	public void checkTwelve()
-	{
-		if (config.enableTwelve()) {
-			//dropDirection = -1;
-			dropXOffset = - 200;
-			dropYOffset = 100;
-			//plusString = "+";
-		}
-		else {
-			//dropDirection = 1;
-			dropXOffset = 0;
-			dropYOffset = 0;
-			//plusString = "";
 		}
 	}
 
@@ -200,6 +182,7 @@ public class PreEocXpOverlay extends Overlay
 		int mouseX = mouse.getX() - bounds.x;
 		int mouseY = mouse.getY() - bounds.y;
 
+
 		if (sentXp)
 		{
 			sentXp = false;
@@ -249,7 +232,7 @@ public class PreEocXpOverlay extends Overlay
 			if (!config.enableTwelve()) {
 				drawTenDrop(graphics, 0, 0);
 			}
-			else drawTwelveDrop(graphics, -dropXOffset, 0);
+			else drawTwelveDrop(graphics);
 		}
 
 
@@ -265,9 +248,11 @@ public class PreEocXpOverlay extends Overlay
 					drawTooltip();
 				}
 			}
+			if (config.onlyCounter()) {
+				Widget xpDisplay = client.getWidget(WidgetInfo.EXPERIENCE_TRACKER);
+				xpDisplay.setHidden(false);
+			}
 		}
-
-
 	}
 
 	/**
@@ -388,44 +373,23 @@ public class PreEocXpOverlay extends Overlay
 	 * If 0.6 seconds have not passed - draw the position of the xp drop based on the time passed (same animation speed regardless of fps)
 	 * After a drop has "existed" for 0.6 seconds or more - hold it for 1.2 seconds, and fade it, until it disappears.
 	 * @param graphics
-	 * @param x initial x position of the xp Drop
-	 * @param y initial y position of the xp Drop
+	 //* @param x initial x position of the xp Drop
+	 //* @param y initial y position of the xp Drop
 	 */
-	private void drawTwelveDrop(Graphics2D graphics, int x, int y)
+	private void drawTwelveDrop(Graphics2D graphics)
 	{
-		graphics.setFont(runescapeSmallFont);
-		final FontMetrics metrics = graphics.getFontMetrics();
-		// runescape chat, 12p, shadow black.
-		int drawXVal = x;
-		int drawYVal;
 
-		int opacityValue = 255;
-		Color dropColor = new Color(250, 141, 17);
-		Color shadowColor = new Color(0,0,0);
+		graphics.setFont(runescapeSmallFont);
+
+		int overlayLocationX = client.getCenterX() - (int) getBounds().getX();
+		int overlayLocationY = client.getCenterY() -(int) getBounds().getY();
+		PreEocXp2012Overlay helper = new PreEocXp2012Overlay( client, plugin,config);
+
 
 		for (int i = 0; i < xpStored.size(); i++)
 		{
 			long timePassed = System.currentTimeMillis() - timeValStored.get(i);
-			long animationTimer = Math.min((timePassed) , 600);
-
-			//moves 150 pixels on the Y axis
-			drawYVal = ((int) ((-1)*((animationTimer) / 4) ) + 124);
-			if (timePassed > 600) {
-				opacityValue = 255 - (int)((timePassed - 600)/4.7);
-			}
-
-			DecimalFormat decimalFormat = new DecimalFormat("###,###,###");
-
-			String skillXpString = decimalFormat.format(xpStored.get(i));
-			String xpDropString = "+" + skillXpString + "xp";
-			xpDropWidth = metrics.stringWidth(xpDropString);
-			//draw shadow
-			graphics.setColor(ColorUtil.colorWithAlpha(shadowColor,opacityValue));
-			graphics.drawString(xpDropString, drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth/2) + 1, drawYVal +1 );
-			//draw text
-			graphics.setColor(ColorUtil.colorWithAlpha(dropColor,opacityValue));
-			graphics.drawString(xpDropString, drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth/2), drawYVal);
-			//OverlayUtil.renderTextLocation(graphics, new Point(drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth/2), drawYVal), xpDropString, dropColor);
+			helper.drawTwelveDrop(graphics, overlayLocationX, overlayLocationY, xpStored.get(i),(int)timePassed);
 		}
 	}
 

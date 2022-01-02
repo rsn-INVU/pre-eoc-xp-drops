@@ -28,6 +28,8 @@ import com.google.inject.Provides;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
 import net.runelite.api.events.*;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -59,6 +61,7 @@ public class PreEocXpPlugin extends Plugin
 	public static int tickCounter = 0;
 	public static boolean sentXp = true;
 	private static boolean configWasChanged = true;
+	public static int newTick;
 
 	@Inject
 	private PreEocXpConfig config;
@@ -87,8 +90,7 @@ public class PreEocXpPlugin extends Plugin
 	 * starts up the overlay
 	 */
 	@Override
-	protected void startUp()
-    {
+	protected void startUp() {
 		overlayManager.add(overlay);
 	}
 
@@ -98,10 +100,11 @@ public class PreEocXpPlugin extends Plugin
 	@Override
 	protected void shutDown() {
 		overlayManager.remove(overlay);
+		client.getWidget(WidgetInfo.EXPERIENCE_TRACKER).setHidden(false);
 	}
 
 	/**
-	 * onGameTick cause it works past 200m xp, and longs so people with more than 2b xp can use this.
+	 * onGameTick cause it works with xp drops disabled, and longs so people with more than 2b xp can use this.
 	 * on login, grabs the overall xp, and signals to the overlay class that xp has been updated.
 	 * Once xp has been fetched once, check if XP has been gained on the gameTick.
 	 * If so, update xpDrop by comparing to the last fetched xp loginXp. Update fetched xp loginXp.
@@ -110,7 +113,8 @@ public class PreEocXpPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick gameTick)
 	{
-		//tickCounter ++;
+
+		tickCounter ++;
 		long overallXp = client.getOverallExperience();
 		preXp = loginXp;
 
@@ -129,6 +133,35 @@ public class PreEocXpPlugin extends Plugin
 		{
 			loginXp = client.getOverallExperience();
 			sentXp = true;
+		}
+	}
+
+	/**
+	 * grabs the fake xp, and signals to the overlay class that xp has been updated.
+	 * Once FakeXp has been fetched once, check if more FakeXp has been gained on the same gameTick and add it.
+	 * Otherwise, reset the FakeXp to the next amount.
+	 * @param event when a FakeXpDrop event is sent - doStuff.
+	 */
+	@Subscribe
+	public void onFakeXpDrop(FakeXpDrop event)
+	{
+
+		if ( newTick == tickCounter ){
+			xpDrop = xpDrop + event.getXp();
+		}
+		else {
+			   xpDrop = event.getXp(); 
+		}
+		newTick = tickCounter;
+		sentXp = true;
+	}
+
+	@Subscribe
+	public void onScriptPreFired (ScriptPreFired scriptPreFired)
+	{
+		Widget xpDisplay = client.getWidget(WidgetInfo.EXPERIENCE_TRACKER);
+		if(xpDisplay!=null){
+			xpDisplay.setHidden(true);
 		}
 	}
 
