@@ -1,6 +1,4 @@
 package com.preeocxp;
-
-import net.runelite.api.Client;
 import net.runelite.client.ui.overlay.*;
 import net.runelite.client.util.ColorUtil;
 import javax.inject.Inject;
@@ -14,9 +12,7 @@ public class PreEocXp2012Overlay extends Overlay
 
     @Inject
     public PreEocXp2012Overlay(
-            Client client,
-            PreEocXpPlugin plugin,
-            PreEocXpConfig config
+            PreEocXpPlugin plugin
     ) {
         super(plugin);
     }
@@ -55,7 +51,8 @@ public class PreEocXp2012Overlay extends Overlay
         int drawYVal = y + ( metrics.getHeight() / 2 );
 
         int opacityValue = 255;
-        Color dropColor = new Color(250, 141, 17);
+        int shadowOpacity = 255;
+        Color dropColor = new Color(239, 178, 70);
         Color shadowColor = new Color(0,0,0);
 
         long animationTimer = Math.min((timePassed) , 600);
@@ -65,15 +62,17 @@ public class PreEocXp2012Overlay extends Overlay
         //time based fade
         if (timePassed > 600) {
             opacityValue = 255 - (int)((timePassed - 600)/4.7);
+            //fade the shadow faster to avoid a dark outline as the text fades
+            shadowOpacity = opacityValue - ((255 - opacityValue)/3);
         }
 
         DecimalFormat decimalFormat = new DecimalFormat("###,###,###");
 
         String skillXpString = decimalFormat.format(xpDrop);
-        String xpDropString = "+" + skillXpString + "xp";
+        String xpDropString = "+" + skillXpString + " xp";
         xpDropWidth = metrics.stringWidth(xpDropString);
         //draw shadow
-        graphics.setColor(ColorUtil.colorWithAlpha(shadowColor,opacityValue));
+        graphics.setColor(ColorUtil.colorWithAlpha(shadowColor,shadowOpacity));
         graphics.drawString(xpDropString, drawXVal - (xpDropWidth/2) + 1, drawYVal +1 );
         //draw text
         graphics.setColor(ColorUtil.colorWithAlpha(dropColor,opacityValue));

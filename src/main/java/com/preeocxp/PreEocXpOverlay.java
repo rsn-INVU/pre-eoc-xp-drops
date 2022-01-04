@@ -56,6 +56,7 @@ public class PreEocXpOverlay extends Overlay
 
 	Font runescapeChatFont;
 	Font runescapeSmallFont;
+	Font rsXpDropFont;
 	private static float dropSize = 16f;
 
 	@Inject
@@ -96,14 +97,18 @@ public class PreEocXpOverlay extends Overlay
 		{
 			InputStream runescapeChat = this.getClass().getResourceAsStream("/runescape_chat.ttf");
 			InputStream runescapeSmall = this.getClass().getResourceAsStream("/runescape_small.ttf");
+			InputStream rsXpDrop = this.getClass().getResourceAsStream("/rsxpdrop.ttf");
 			//create the font to use. Specify the size!
 			runescapeChatFont = Font.createFont(Font.TRUETYPE_FONT, runescapeChat).deriveFont(16f);
 			runescapeSmallFont = Font.createFont(Font.TRUETYPE_FONT, runescapeSmall).deriveFont(dropSize);
+			//for some reason the size of this font is x2, subtracting 4 makes sure regular mimics the pre eoc size.
+			rsXpDropFont = Font.createFont(Font.TRUETYPE_FONT, rsXpDrop).deriveFont(dropSize - 4);
 
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			//register the font
 			ge.registerFont(runescapeChatFont);
 			ge.registerFont(runescapeSmallFont);
+			ge.registerFont(rsXpDropFont);
 		}
 		catch (IOException | FontFormatException e)
 		{
@@ -379,11 +384,17 @@ public class PreEocXpOverlay extends Overlay
 	private void drawTwelveDrop(Graphics2D graphics)
 	{
 
-		graphics.setFont(runescapeSmallFont);
+		graphics.setFont(rsXpDropFont);
 
+		//Center the xp drop, regardless of label position and client size.
+		//getBounds() retrieves the label's position, which is also the (0,0) coordinate, then offset that from the center value
+		//to get the actual center (tm).
 		int overlayLocationX = client.getCenterX() - (int) getBounds().getX();
-		int overlayLocationY = client.getCenterY() -(int) getBounds().getY();
-		PreEocXp2012Overlay helper = new PreEocXp2012Overlay( client, plugin,config);
+		//offset y 4 pixels cause that's just how it was. (It ends up centered over the hover text in-game - probably was jagex' anchor?)
+		int overlayLocationY = client.getCenterY() -(int) getBounds().getY() - 4;
+
+		//draw via a helper class, to assign unique opacity values to each xp drop.
+		PreEocXp2012Overlay helper = new PreEocXp2012Overlay( plugin);
 
 
 		for (int i = 0; i < xpStored.size(); i++)
