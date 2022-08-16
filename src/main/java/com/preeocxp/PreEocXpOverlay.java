@@ -76,7 +76,9 @@ public class PreEocXpOverlay extends Overlay
 		this.tooltipManager = tooltipManager;
 		this.xpTooltip.getComponent().setPreferredSize(new Dimension(TOOLTIP_RECT_SIZE_X, -30));
 
-		setPosition(OverlayPosition.DETACHED);
+		//setPosition(OverlayPosition.DETACHED);
+		setPosition(OverlayPosition.DYNAMIC);
+		setMovable(true);
 
 		//Above HP Bars and Hitsplats - Below Bank and Quest interfaces
 		setLayer(OverlayLayer.MANUAL);
@@ -281,7 +283,8 @@ public class PreEocXpOverlay extends Overlay
 		int drawX = x ;
 		int drawY = y + OVERLAY_RECT_SIZE_Y - 1 ;
 
-		int skillXp = (client.getSkillExperience(skillChosen));
+
+		//int skillXp = (client.getSkillExperience(skillChosen));
 
 		Color xpColor = Color.WHITE;
 		Color lotsColor = Color.RED;
@@ -367,6 +370,7 @@ public class PreEocXpOverlay extends Overlay
 
 			String skillXpString = decimalFormat.format(xpStored.get(i));
 			xpDropWidth = metrics.stringWidth(skillXpString + "xp");
+
 			OverlayUtil.renderTextLocation(graphics, new Point(drawXVal + (OVERLAY_RECT_SIZE_X - xpDropWidth), drawYVal), skillXpString + "xp", dropColor);
 		}
 	}

@@ -27,6 +27,7 @@ package com.preeocxp;
 import com.google.inject.Provides;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
+import net.runelite.api.Skill;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
@@ -62,6 +63,7 @@ public class PreEocXpPlugin extends Plugin
 	public static boolean sentXp = true;
 	private static boolean configWasChanged = true;
 	public static int newTick;
+	public static long skillXp;
 
 	@Inject
 	private PreEocXpConfig config;
@@ -106,6 +108,7 @@ public class PreEocXpPlugin extends Plugin
 	/**
 	 * onGameTick cause it works with xp drops disabled, and longs so people with more than 2b xp can use this.
 	 * on login, grabs the overall xp, and signals to the overlay class that xp has been updated.
+	 * if overallXp is to be displayed, skillXp is set.
 	 * Once xp has been fetched once, check if XP has been gained on the gameTick.
 	 * If so, update xpDrop by comparing to the last fetched xp loginXp. Update fetched xp loginXp.
 	 * @param gameTick when a gameTick event is sent - doStuff.
@@ -116,7 +119,12 @@ public class PreEocXpPlugin extends Plugin
 
 		tickCounter ++;
 		long overallXp = client.getOverallExperience();
+		if (config.displaySkill() == Skill.OVERALL) {
+			skillXp = overallXp;
+		}
 		preXp = loginXp;
+
+		//skillXp = client.getSkillExperience(config.displaySkill());
 
 		if (loginXp != 0 && (overallXp - preXp <= 0))
 		{
@@ -166,19 +174,35 @@ public class PreEocXpPlugin extends Plugin
 	}
 
 	/**
+	 * @param statChanged when a statChanged event is sent - update the skill xp.
+	 */
+	@Subscribe
+	public void onStatChanged(StatChanged statChanged)
+	{
+		if (config.displaySkill() != Skill.OVERALL) {
+			skillXp = client.getSkillExperience(config.displaySkill());
+	}
+	}
+	/**
 	 * sets a global toggle when a config has been changed.
+	 * updates the skillXp as well, since it won't trigger a statchange, and thus an update.
 	 * @param configChanged
 	 */
 	@Subscribe
     public void onConfigChanged(ConfigChanged configChanged)
     {
 	    setConfigUpdateState(true);
+		if (config.displaySkill() != Skill.OVERALL) {
+			skillXp = client.getSkillExperience(config.displaySkill());
+		}
     }
+
 
     public static boolean getConfigUpdateState()
 	{
 		return configWasChanged;
 	}
+
 
 	public static void setConfigUpdateState (boolean configSetter)
 	{
