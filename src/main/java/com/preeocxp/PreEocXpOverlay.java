@@ -2,7 +2,6 @@ package com.preeocxp;
 
 import net.runelite.api.Client;
 import net.runelite.api.Point;
-import net.runelite.api.Skill;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetInfo;
@@ -12,7 +11,6 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.PanelComponent;
 import net.runelite.client.ui.overlay.tooltip.Tooltip;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
-import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 
 import javax.inject.Inject;
@@ -43,7 +41,7 @@ public class PreEocXpOverlay extends Overlay
 
 	private final Tooltip xpTooltip = new Tooltip(new PanelComponent());
 
-	private Skill skillChosen =  Skill.OVERALL;
+	private ConfigSkill skillChosen =  ConfigSkill.OVERALL;
 	private static int lotsThreshold = 100000000; //100 million
 	private static int shrinkValue = 0;
 	private static final LinkedList<Integer> xpStored = new LinkedList<Integer> ();

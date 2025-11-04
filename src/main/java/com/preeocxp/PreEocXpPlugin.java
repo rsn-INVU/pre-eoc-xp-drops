@@ -27,7 +27,6 @@ package com.preeocxp;
 import com.google.inject.Provides;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
-import net.runelite.api.Skill;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
@@ -119,7 +118,7 @@ public class PreEocXpPlugin extends Plugin
 
 		tickCounter ++;
 		long overallXp = client.getOverallExperience();
-		if (config.displaySkill() == Skill.OVERALL) {
+		if (config.displaySkill() == ConfigSkill.OVERALL) {
 			skillXp = overallXp;
 		}
 		preXp = loginXp;
@@ -179,8 +178,8 @@ public class PreEocXpPlugin extends Plugin
 	@Subscribe
 	public void onStatChanged(StatChanged statChanged)
 	{
-		if (config.displaySkill() != Skill.OVERALL) {
-			skillXp = client.getSkillExperience(config.displaySkill());
+		if (config.displaySkill() != ConfigSkill.OVERALL) {
+			skillXp = client.getSkillExperience(config.displaySkill().toSkill());
 	}
 	}
 	/**
@@ -192,8 +191,8 @@ public class PreEocXpPlugin extends Plugin
     public void onConfigChanged(ConfigChanged configChanged)
     {
 	    setConfigUpdateState(true);
-		if (config.displaySkill() != Skill.OVERALL) {
-			skillXp = client.getSkillExperience(config.displaySkill());
+		if (config.displaySkill() != ConfigSkill.OVERALL) {
+			skillXp = client.getSkillExperience(config.displaySkill().toSkill());
 		}
     }
 
