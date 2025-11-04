@@ -1,6 +1,5 @@
 package com.preeocxp;
 
-import net.runelite.api.Skill;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -27,9 +26,9 @@ public interface PreEocXpConfig extends Config
 			description = "Choose which Skill to display",
 			position = 1
 	)
-	default Skill displaySkill()
+	default ConfigSkill displaySkill()
 	{
-		return Skill.OVERALL;
+		return ConfigSkill.OVERALL;
 	}
 
 	@ConfigItem(
