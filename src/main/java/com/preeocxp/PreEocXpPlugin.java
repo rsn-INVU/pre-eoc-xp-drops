@@ -45,7 +45,7 @@ import java.time.temporal.ChronoUnit;
 
 @PluginDescriptor(
 		name = "Pre Eoc Xp Drops",
-		description = "Customize Xp drops and display the 2010 xp Counter (WIP - currently just 2010 xp drops)",
+		description = "Customize Xp drops and display the 2010 xp Counter",
 		tags = {"experience", "levels", "overlay", "xp drop"},
 		enabledByDefault = false
 )
